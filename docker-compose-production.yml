@@ -1,0 +1,42 @@
+version: '3.7'
+services:
+  web_pro:
+    build:
+      context: ./web
+      dockerfile: DockerfileProduction
+    ports:
+      - 4132:4132
+    environment:
+      - PORT=4132
+  server_pro:
+    build:
+      context: ./server
+      dockerfile: DockerfileProduction
+    ports:
+      - 4133:4133
+    volumes:
+      - ./logs:/server-logs/
+    links:
+      - mongo
+      - mariadb_pro
+    depends_on:
+      - mongo
+      - mariadb_pro
+    env_file:
+      - ./server/dockerDev.env
+  mongo:
+    image: mongo:4.4-bionic
+    volumes:
+      - ./data/mongo:/data/db
+    ports:
+      - 27017:27017
+    environment:
+      - MONGO_DATA_DIR=/data/db
+  mariadb_pro:
+    image: mariadb
+    restart: always
+    volumes:
+      - ./data/mysql:/var/lib/mysql
+    environment:
+      - MYSQL_ROOT_PASSWORD=YOUR_PASSWORD
+      - MYSQL_DATABASE=iic_db_pro
